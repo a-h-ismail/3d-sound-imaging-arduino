@@ -1,15 +1,15 @@
 #include <Stepper.h>
 #include <Servo.h>
 
-const int trigPin = 9;
-const int echoPin = 10;
+const int trigPin = 6;
+const int echoPin = 7;
 const int stepsPerRevolution = 2048;
 bool isReversed = false;
 int Distance = 0;
 int Angle = 0;
 int Elevation = 0;
 
-Stepper myStepper(stepsPerRevolution, 8, 7, 6, 5);
+Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
 Servo myServo;
 
 void setup()
@@ -18,19 +18,26 @@ void setup()
     myServo.attach(13);
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
+
+    myStepper.setSpeed(10);
 }
 
 void loop()
 {
-    for (int i = 0; i < 12; i++)
+    delay(5000);
+    Serial.print("start\n \n");
+    for (int i = 0; i < 18; i++)
     {
+        // 28 is the approximative steps for a 5 degree move
         myStepper.step(28);
-        delayMicroseconds(250000);
-        Elevation = i * 5;
+        delay(500);
+        Elevation = 5 * i;
         servoSweep();
-        Serial.print(i);
+        getDistance();
     }
-    myStepper.step(-12);
+    Serial.print("\n The End \n \n \n");
+    myStepper.step(-504);
+    Elevation = 0;
 }
 
 int getDistance()
@@ -52,11 +59,10 @@ int getDistance()
 
 void printCoordinates()
 {
-    Serial.print("Distance: ");
     Serial.print(Distance);
-    Serial.print(", Angle: ");
+    Serial.print(",");
     Serial.print(Angle);
-    Serial.print(", Elevation: ");
+    Serial.print(",");
     Serial.println(Elevation);
 }
 
@@ -69,9 +75,11 @@ void servoSweep()
         for (Angle = 0; Angle <= 90; Angle += 5)
         {
             myServo.write(Angle);
+            // Wait the servo to get in position
+            delay(200);
             Distance = getDistance();
             printCoordinates();
-            delay(500);
+            
         }
         isReversed = true;
     }
@@ -80,9 +88,9 @@ void servoSweep()
         for (Angle = 90; Angle >= 0; Angle -= 5)
         {
             myServo.write(Angle);
+            delay(250);
             Distance = getDistance();
             printCoordinates();
-            delay(500);
         }
         isReversed = false;
     }
