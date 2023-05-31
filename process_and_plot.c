@@ -18,55 +18,48 @@ int main()
     double x[324], y[324], z[324];
     double ro, teta, phi;
     int i, status;
-    while (1)
+    bool run;
+    do
     {
-        bool run;
-        do
+        fscanf(arduino_input, "%s", buffer);
+        sleep(1);
+    } while (strcmp(buffer, "start") == 0);
+
+    puts("Received start signal, processing data...");
+    i = 0;
+    while (i < 314)
+    {
+        fscanf(arduino_input, "%255s", buffer);
+
+        status = sscanf(buffer, "%lf,%lf,%lf", &ro, &phi, &teta);
+        if (status == 3)
         {
-            fscanf(arduino_input, "%s", buffer);
-            sleep(1);
-        } while (strcmp(buffer, "start") == 0);
+            teta *= M_PI / 180;
+            phi += 45;
+            phi *= M_PI / 180;
+            // Correcting ro
+            ro = sqrt(pow(0.05, 2) + pow(ro, 2));
 
-        puts("Received start signal, processing data...");
-        i = 0;
-        while (i < 314)
-        {
-            fscanf(arduino_input, "%255s", buffer);
-            if (strcmp("The End", buffer) == 0)
-            {
-                puts("Received stop signal, saving datapoints and plotting them.");
-                break;
-            }
+            double teta_c = asin(0.05 / ro);
 
-            status = sscanf(buffer, "%lf,%lf,%lf", &ro, &phi, &teta);
-            if (status == 3)
-            {
-                teta *= M_PI / 180;
-                phi += 45;
-                phi *= M_PI / 180;
-                // Correcting ro
-                ro = sqrt(pow(0.05, 2) + pow(ro, 2));
+            // Correcting teta
+            teta = M_PI / 2 - teta_c - teta;
 
-                double teta_c = asin(0.05 / ro);
-
-                // Correcting teta
-                teta = M_PI / 2 - teta_c - teta;
-
-                x[i] = ro * sin(teta) * cos(phi);
-                y[i] = ro * sin(teta) * sin(phi);
-                z[i] = ro * cos(teta);
-                printf("P%d (%g,%g,%g)\n", i, x[i], y[i], z[i]);
-                ++i;
-            }
-        }
-
-        {
-            FILE *output = fopen("output.txt", "w");
-            for (i = 0; i < 324; ++i)
-            {
-                fprintf(output, "%lf %lf %lf\n", x[i], y[i], z[i]);
-            }
-            fclose(output);
+            x[i] = ro * sin(teta) * cos(phi);
+            y[i] = ro * sin(teta) * sin(phi);
+            z[i] = ro * cos(teta);
+            printf("P%d (%g,%g,%g)\n", i, x[i], y[i], z[i]);
+            ++i;
         }
     }
+
+    {
+        FILE *output = fopen("output.txt", "w");
+        for (i = 0; i < 324; ++i)
+        {
+            fprintf(output, "%lf %lf %lf\n", x[i], y[i], z[i]);
+        }
+        fclose(output);
+    }
+    return 0;
 }
