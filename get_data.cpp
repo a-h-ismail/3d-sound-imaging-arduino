@@ -1,8 +1,8 @@
 #include <Stepper.h>
 #include <Servo.h>
 
-const int trigPin = 6;
-const int echoPin = 7;
+const int trigPin = 12;
+const int echoPin = 13;
 const int stepsPerRevolution = 2048;
 bool isReversed = false;
 int Distance = 0;
@@ -15,7 +15,7 @@ Servo myServo;
 void setup()
 {
     Serial.begin(9600);
-    myServo.attach(13);
+    myServo.attach(7);
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
 
