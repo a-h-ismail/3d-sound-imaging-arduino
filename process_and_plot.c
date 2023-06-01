@@ -51,6 +51,7 @@ int main()
         if (status == 3)
         {
             teta *= M_PI / 180;
+            phi += 45;
             phi *= M_PI / 180;
             // Correcting ro
             ro = sqrt(pow(SENSOR_HEIGHT_CM, 2) + pow(ro, 2));
