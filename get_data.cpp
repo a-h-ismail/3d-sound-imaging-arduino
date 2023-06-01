@@ -30,12 +30,12 @@ void loop()
     {
         myStepper.step(-12);
         delay(500);
-        Elevation = (360*12.0/2048) * i;
+        Elevation = (360 * 12.0 / 2048) * i;
         servoSweep();
         getDistance();
     }
     Serial.print("\nEnd \n \n \n");
-    myStepper.step(18*12);
+    myStepper.step(18 * 12);
     Elevation = 0;
 }
 
@@ -71,11 +71,11 @@ void servoSweep()
     // isReversed determines the rotation direction
     if (isReversed == false)
     {
-        for (Angle = 45; Angle <= 135; Angle += 5)
+        for (Angle = 0; Angle <= 90; Angle += 5)
         {
             myServo.write(Angle);
             // Wait the servo to get in position
-            delay(150);
+            delay(250);
             Distance = getDistance();
             printCoordinates();
         }
@@ -83,10 +83,10 @@ void servoSweep()
     }
     else
     {
-        for (Angle = 135; Angle >= 45; Angle -= 5)
+        for (Angle = 90; Angle >= 0; Angle -= 5)
         {
             myServo.write(Angle);
-            delay(150);
+            delay(250);
             Distance = getDistance();
             printCoordinates();
         }
