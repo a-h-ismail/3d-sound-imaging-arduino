@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include <math.h>
 
 #define POINTS_PER_SWEEP 19
@@ -16,7 +17,7 @@ int main()
     puts("Waiting for input...");
     while (serial_input == NULL)
     {
-        // Depends where the USB serial is connected
+        // Depends where the USB serial is connected or other conditions
         serial_input = fopen("/dev/ttyACM0", "r");
         if (serial_input == NULL)
             serial_input = fopen("/dev/ttyACM1", "r");
@@ -41,6 +42,7 @@ int main()
     output = fopen("plot_data.txt", "w");
 
     i = 0;
+    // This loop
     while (i < TOTAL_DATAPOINTS)
     {
         fscanf(serial_input, "%255s", buffer);
@@ -68,6 +70,9 @@ int main()
             fprintf(output, "%lf %lf %lf\n", x, y, z);
             ++i;
         }
+        // Prevent thrashing the computer performance if the serial line is not sending data, wait 0.1s between reads
+        else
+            usleep(100000);
     }
     fclose(output);
     // Call the plotter
