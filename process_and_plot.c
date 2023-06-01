@@ -16,12 +16,15 @@ int main()
     puts("Waiting for input...");
     while (serial_input == NULL)
     {
+        // Depends where the USB serial is connected
         serial_input = fopen("/dev/ttyACM0", "r");
         if (serial_input == NULL)
             serial_input = fopen("/dev/ttyACM1", "r");
+        if (serial_input == NULL)
+            serial_input = fopen("/dev/ttyACM2", "r");
         sleep(1);
     }
-    puts("Input stream found, reading from /dev/ttyACM0");
+    puts("Input stream found, reading from /dev/ttyACM0-2");
     char buffer[256];
     double x, y, z;
     double ro, teta, phi;
