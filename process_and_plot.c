@@ -4,62 +4,68 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+
+#define POINTS_PER_SWEEP 19
+#define STEPPER_TOTAL_STEPS 18
+#define TOTAL_DATAPOINTS POINTS_PER_SWEEP *STEPPER_TOTAL_STEPS
+#define SENSOR_HEIGHT_CM 5
+
 int main()
 {
-    FILE *arduino_input = NULL;
+    FILE *serial_input = NULL, *output = NULL;
     puts("Waiting for input...");
-    while (arduino_input == NULL)
+    while (serial_input == NULL)
     {
-        arduino_input = fopen("/dev/ttyACM0", "r");
+        serial_input = fopen("/dev/ttyACM0", "r");
+        if (serial_input == NULL)
+            serial_input = fopen("/dev/ttyACM1", "r");
         sleep(1);
     }
     puts("Input stream found, reading from /dev/ttyACM0");
     char buffer[256];
-    double x[324], y[324], z[324];
+    double x, y, z;
     double ro, teta, phi;
     int i, status;
-    bool run;
+
     do
     {
-        fscanf(arduino_input, "%s", buffer);
+        fscanf(serial_input, "%256s", buffer);
         sleep(1);
     } while (strcmp(buffer, "start") == 0);
 
-    puts("Received start signal, processing data...");
-    i = 0;
-    while (i < 314)
-    {
-        fscanf(arduino_input, "%255s", buffer);
+    puts("Received start signal, reading and processing data...");
+    // Open the output file
+    output = fopen("plot_data.txt", "w");
 
+    i = 0;
+    while (i < POINTS_PER_SWEEP * STEPPER_TOTAL_STEPS)
+    {
+        fscanf(serial_input, "%255s", buffer);
         status = sscanf(buffer, "%lf,%lf,%lf", &ro, &phi, &teta);
+        if (strcmp("End", buffer) == 0)
+            break;
+        // Skip empty inputs
         if (status == 3)
         {
             teta *= M_PI / 180;
-            phi += 45;
             phi *= M_PI / 180;
             // Correcting ro
-            ro = sqrt(pow(0.05, 2) + pow(ro, 2));
+            ro = sqrt(pow(SENSOR_HEIGHT_CM, 2) + pow(ro, 2));
 
-            double teta_c = asin(0.05 / ro);
+            double teta_c = asin(SENSOR_HEIGHT_CM / ro);
 
             // Correcting teta
             teta = M_PI / 2 - teta_c - teta;
 
-            x[i] = ro * sin(teta) * cos(phi);
-            y[i] = ro * sin(teta) * sin(phi);
-            z[i] = ro * cos(teta);
-            printf("P%d (%g,%g,%g)\n", i, x[i], y[i], z[i]);
+            x = ro * sin(teta) * cos(phi);
+            y = ro * sin(teta) * sin(phi);
+            z = ro * cos(teta);
+            printf("P%d (%g,%g,%g)\n", i, x, y, z);
+            fprintf(output, "%lf %lf %lf\n", x, y, z);
             ++i;
         }
     }
-
-    {
-        FILE *output = fopen("output.txt", "w");
-        for (i = 0; i < 324; ++i)
-        {
-            fprintf(output, "%lf %lf %lf\n", x[i], y[i], z[i]);
-        }
-        fclose(output);
-    }
+    fclose(output);
+    system("echo \"splot '$PWD/plot_data.txt' with points\" | gnuplot --persist");
     return 0;
 }
