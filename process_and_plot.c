@@ -7,7 +7,7 @@
 
 #define POINTS_PER_SWEEP 19
 #define STEPPER_TOTAL_STEPS 18
-#define TOTAL_DATAPOINTS POINTS_PER_SWEEP *STEPPER_TOTAL_STEPS
+#define TOTAL_DATAPOINTS (POINTS_PER_SWEEP * STEPPER_TOTAL_STEPS)
 #define SENSOR_HEIGHT_CM 5
 
 int main()
@@ -41,7 +41,7 @@ int main()
     output = fopen("plot_data.txt", "w");
 
     i = 0;
-    while (i < POINTS_PER_SWEEP * STEPPER_TOTAL_STEPS)
+    while (i < TOTAL_DATAPOINTS)
     {
         fscanf(serial_input, "%255s", buffer);
         status = sscanf(buffer, "%lf,%lf,%lf", &ro, &phi, &teta);
@@ -69,6 +69,7 @@ int main()
         }
     }
     fclose(output);
+    // Call the plotter
     system("echo \"splot '$PWD/plot_data.txt' with points\" | gnuplot --persist");
     return 0;
 }
