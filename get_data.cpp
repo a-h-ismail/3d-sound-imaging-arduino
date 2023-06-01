@@ -5,9 +5,9 @@ const int trigPin = 12;
 const int echoPin = 13;
 const int stepsPerRevolution = 2048;
 bool isReversed = false;
-int Distance = 0;
+float Distance = 0;
 int Angle = 0;
-int Elevation = 0;
+float Elevation = 0;
 
 Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
 Servo myServo;
@@ -28,19 +28,18 @@ void loop()
     Serial.print("start\n \n");
     for (int i = 0; i < 18; i++)
     {
-        // 28 is the approximative steps for a 5 degree move
-        myStepper.step(28);
+        myStepper.step(-12);
         delay(500);
-        Elevation = 5 * i;
+        Elevation = (360*12.0/2048) * i;
         servoSweep();
         getDistance();
     }
-    Serial.print("\n The End \n \n \n");
-    myStepper.step(-504);
+    Serial.print("\nEnd \n \n \n");
+    myStepper.step(18*12);
     Elevation = 0;
 }
 
-int getDistance()
+float getDistance()
 {
     // Generate a pulse by switching from low to high for 10 microseconds
     digitalWrite(trigPin, LOW);
@@ -72,23 +71,22 @@ void servoSweep()
     // isReversed determines the rotation direction
     if (isReversed == false)
     {
-        for (Angle = 0; Angle <= 90; Angle += 5)
+        for (Angle = 45; Angle <= 135; Angle += 5)
         {
             myServo.write(Angle);
             // Wait the servo to get in position
-            delay(200);
+            delay(150);
             Distance = getDistance();
             printCoordinates();
-            
         }
         isReversed = true;
     }
     else
     {
-        for (Angle = 90; Angle >= 0; Angle -= 5)
+        for (Angle = 135; Angle >= 45; Angle -= 5)
         {
             myServo.write(Angle);
-            delay(250);
+            delay(150);
             Distance = getDistance();
             printCoordinates();
         }
