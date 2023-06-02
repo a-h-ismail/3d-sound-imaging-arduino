@@ -28,11 +28,11 @@ void loop()
     Serial.print("start\n \n");
     for (int i = 0; i < 18; i++)
     {
-        myStepper.step(-12);
-        delay(500);
         Elevation = (360 * 12.0 / 2048) * i;
         servoSweep();
         getDistance();
+        myStepper.step(-12);
+        delay(500);
     }
     Serial.print("\nEnd \n \n \n");
     myStepper.step(18 * 12);
