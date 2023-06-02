@@ -13,41 +13,44 @@
 
 int main()
 {
-    FILE *serial_input = NULL, *output = NULL;
-    puts("Waiting for input...");
-    while (serial_input == NULL)
-    {
-        // Depends where the USB serial is connected or other conditions
-        serial_input = fopen("/dev/ttyACM0", "r");
-        if (serial_input == NULL)
-            serial_input = fopen("/dev/ttyACM1", "r");
-        if (serial_input == NULL)
-            serial_input = fopen("/dev/ttyACM2", "r");
-        sleep(1);
-    }
-    puts("Input stream found, reading from /dev/ttyACM0-2");
-    char buffer[256];
+    FILE *serial_input = NULL, *output = NULL, *locate_stream = NULL;
+    char tmp[256];
     double x, y, z;
     double ro, teta, phi;
     int i, status;
 
+    puts("Waiting for input...");
+    while (serial_input == NULL)
+    {
+        // Detect the USB serial connection by scanning /dev
+        locate_stream = popen("echo /dev/`/bin/ls /dev | /usr/bin/grep ttyACM`", "r");
+        fscanf(locate_stream, "%255s", tmp);
+
+        // If the output is not /dev/
+        if (strlen(tmp) > 5)
+            serial_input = fopen(tmp, "r");
+        
+        pclose(locate_stream);
+        sleep(1);
+    }
+    printf("Input stream found, reading from %s\n", tmp);
+
     do
     {
-        fscanf(serial_input, "%256s", buffer);
+        fscanf(serial_input, "%256s", tmp);
         sleep(1);
-    } while (strcmp(buffer, "start") == 0);
+    } while (strcmp(tmp, "start") == 0);
 
     puts("Received start signal, reading and processing data...");
     // Open the output file
     output = fopen("plot_data.txt", "w");
 
     i = 0;
-    // This loop
     while (i < TOTAL_DATAPOINTS)
     {
-        fscanf(serial_input, "%255s", buffer);
-        status = sscanf(buffer, "%lf,%lf,%lf", &ro, &phi, &teta);
-        if (strcmp("End", buffer) == 0)
+        fscanf(serial_input, "%255s", tmp);
+        status = sscanf(tmp, "%lf,%lf,%lf", &ro, &phi, &teta);
+        if (strcmp("End", tmp) == 0)
             break;
         // Skip empty inputs
         if (status == 3)
