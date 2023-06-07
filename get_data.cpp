@@ -50,19 +50,27 @@ float getDistance()
 
     // The ultrasonic sensor echo pin remains high until the sound echo is received
     // Get the duration of the high pulse on the echo pin
-    int duration = pulseIn(echoPin, HIGH);
-
+    unsigned long duration = pulseIn(echoPin, HIGH);
     // Speed of sound considered to be 340m/s (divided by 2 because it is a round trip)
-    return duration * 0.034 / 2;
+    float distance = duration * 0.034 / 2;
+
+    // Discard readings larger than 4 meters as the sensor is not rated for higher values
+    if (distance <= 400)
+        return distance;
+    else
+        return -1;
 }
 
 void printCoordinates()
 {
-    Serial.print(Distance);
-    Serial.print(",");
-    Serial.print(Angle);
-    Serial.print(",");
-    Serial.println(Elevation);
+    if (Distance > 0)
+    {
+        Serial.print(Distance);
+        Serial.print(",");
+        Serial.print(Angle);
+        Serial.print(",");
+        Serial.println(Elevation);
+    }
 }
 
 void servoSweep()
