@@ -23,7 +23,7 @@ int main()
     while (serial_input == NULL)
     {
         // Detect the USB serial connection by scanning /dev
-        locate_stream = popen("echo /dev/`/bin/ls /dev | /usr/bin/grep ttyACM`", "r");
+        locate_stream = popen("echo /dev/`ls /dev | grep ttyACM`", "r");
         fscanf(locate_stream, "%255s", tmp);
 
         // If the output is not /dev/
