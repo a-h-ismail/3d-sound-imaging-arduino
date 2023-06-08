@@ -37,7 +37,7 @@ int main()
 
     do
     {
-        fscanf(serial_input, "%256s", tmp);
+        fscanf(serial_input, "%255s", tmp);
         sleep(1);
     } while (strcmp(tmp, "start") == 0);
 
@@ -79,6 +79,6 @@ int main()
     }
     fclose(output);
     // Call the plotter
-    system("echo \"splot '$PWD/plot_data.txt' with points\" | gnuplot --persist");
+    system("echo \"splot '$PWD/plot_data.txt' with points palette\" | gnuplot --persist");
     return 0;
 }
